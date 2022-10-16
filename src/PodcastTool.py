@@ -1,44 +1,27 @@
 from src.Hash import md5
+from src.SQLITE_CRUD import crud
 
-class Database:
-    """Tool for handling database functions within the context of the app.
-    """
+class PodcastTool(crud):
+
     def __init__(self, db_name: str) -> None:
-        """Class Constructor
-
-        Args:
-            db_name (str): Name of the database to be worked on.
-        """
-        self.db_name = db_name
-
-
-    def connect(self):
-        """Connect to the database and prepare connection & cursor properties.
-        """
-        import sqlite3
         from os.path import exists
         first_run = False
-        if (exists(self.db_name) == False):
+        if (exists(db_name) == False):
             first_run = True
-        self.conn = sqlite3.connect(self.db_name)
+        super().__init__(db_name)
         if first_run == True:
-            self._write_tables()
-        self.cursor = self.conn.cursor()
+            self._create_default_tables()
 
 
-    def _write_tables(self) -> None:
+    def _create_default_tables(self) -> None:
         """Write the default tables to the database.
         """
-        self.conn.execute(
-            '''CREATE TABLE subscribed_podcasts
-            (
-                table_id CHAR(35) PRIMARY KEY NOT NULL,
-                name TEXT NOT NULL,
-                image TEXT NOT NULL,
-                hash CHAR(32) NOT NULL
-            );
-            '''
-        )
+        self.create_table('subscribed_podcasts',[
+            'table_id CHAR(35) PRIMARY KEY NOT NULL',
+            'name TEXT NOT NULL',
+            'image TEXT NOT NULL',
+            'hash CHAR(32) NOT NULL',
+        ])
 
 
     def subscribe_to_new_podcast(self, podcast_title: str, podcast_image: str, podcast_hash: str, entries: dict) -> None:
@@ -51,29 +34,22 @@ class Database:
         """
         new_table_name = 'pn_' + md5(podcast_title)
 
-        self.conn.execute(
-        '''CREATE TABLE {table_name}
-            (
-                guid CHAR(32) PRIMARY KEY NOT NULL,
-                title TEXT NOT NULL,
-                audio TEXT NOT NULL,
-                duration TEXT NOT NULL,
-                site_url TEXT NOT NULL,
-                date_published INT NOT NULL,
-                downloaded INT NOT NULL DEFAULT 0
-            );
-            '''.format(table_name=new_table_name)
-        )
+        self.create_table(new_table_name, [
+            'guid CHAR(32) PRIMARY KEY NOT NULL',
+            'title TEXT NOT NULL',
+            'audio TEXT NOT NULL',
+            'duration TEXT NOT NULL',
+            'site_url TEXT NOT NULL',
+            'date_published INT NOT NULL',
+            'downloaded INT NOT NULL DEFAULT 0',
+        ])
 
-        sql = '''INSERT INTO subscribed_podcasts 
-            (table_id,name,image,hash)
-            VALUES
-            (?,?,?,?);
-            '''
-        self.conn.execute(
-            sql, (new_table_name, podcast_title, podcast_image, podcast_hash)
-        )
-        self.conn.commit()
+        self.insert('subscribed_podcasts', {
+            'table_id': new_table_name,
+            'name': podcast_title,
+            'image': podcast_image,
+            'hash': podcast_hash,
+        })
 
         for line in entries:
             guid = md5(line)
@@ -84,15 +60,14 @@ class Database:
             link = data['siteURL']
             pub_date = self._get_timestamp(data['published'])
 
-            sql = '''INSERT INTO {table_name}
-            (guid,title,audio,duration,site_url,date_published)
-            VALUES
-            (?,?,?,?,?,?)
-            '''.format(table_name=new_table_name)
-            self.conn.execute(
-                sql, (guid, title, audio, duration, link, pub_date)
-            )
-            self.conn.commit()
+            self.insert(new_table_name, {
+                'guid': guid,
+                'title': title,
+                'audio': audio,
+                'duration': duration,
+                'site_url': link,
+                'date_published': pub_date,
+            })
 
 
     def _get_timestamp(self, timestr: str) -> int:
