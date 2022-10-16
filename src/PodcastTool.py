@@ -5,7 +5,7 @@ class PodcastTool(crud):
     """Tool for performing various podcast operations.
 
     Args:
-        crud (obj): _description_
+        crud (obj): Extends from the SQLITE_CRUD class.
     """
     def __init__(self, db_name: str) -> None:
         from os.path import exists
@@ -115,22 +115,5 @@ class PodcastTool(crud):
         return months[month]
 
 
-    def list_tables(self) -> list:
-        """Generate a list of tables in the database.
-
-        Returns:
-            list: List of table names
-        """
-        self.cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = []
-        results = self.cursor.fetchall()
-        for table in results:
-            tables.append(table[0])
-        return tables
-
-
-    def _kill(self):
-        """Kill the script immediately.
-        """
-        import sys
-        sys.exit()
+    def download_missing_episodes(self, limit:int=5) -> None:
+        pass
