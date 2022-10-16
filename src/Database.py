@@ -1,3 +1,5 @@
+from src.Hash import md5
+
 class Database:
     """Tool for handling database functions within the context of the app.
     """
@@ -32,26 +34,14 @@ class Database:
             (
                 table_id CHAR(35) PRIMARY KEY NOT NULL,
                 name TEXT NOT NULL,
-                image TEXT NOT NULL
+                image TEXT NOT NULL,
+                hash CHAR(32) NOT NULL
             );
             '''
         )
 
 
-    def _hash_md5(self, string_text: str) -> str:
-        """Generate an MD5 table id.
-
-        Args:
-            string_text (str): The podcast title out of which the hash will be created.
-
-        Returns:
-            str: MD5 hash
-        """
-        import hashlib
-        return hashlib.md5(string_text.encode()).hexdigest()
-
-
-    def subscribe_to_new_podcast(self, podcast_title: str, podcast_image: str, entries: dict) -> None:
+    def subscribe_to_new_podcast(self, podcast_title: str, podcast_image: str, podcast_hash: str, entries: dict) -> None:
         """Create a new podcast table for episodes of a subscribed podcast.
 
         Args:
@@ -59,7 +49,7 @@ class Database:
             podcast_image (str): The url to the cover image of the podcast.
             entries (dict): the 
         """
-        new_table_name = 'pn_' + self._hash_md5(podcast_title)
+        new_table_name = 'pn_' + md5(podcast_title)
 
         self.conn.execute(
         '''CREATE TABLE {table_name}
@@ -76,17 +66,17 @@ class Database:
         )
 
         sql = '''INSERT INTO subscribed_podcasts 
-            (table_id,name,image)
+            (table_id,name,image,hash)
             VALUES
-            (?,?,?);
+            (?,?,?,?);
             '''
         self.conn.execute(
-            sql, (new_table_name, podcast_title, podcast_image)
+            sql, (new_table_name, podcast_title, podcast_image, podcast_hash)
         )
         self.conn.commit()
 
         for line in entries:
-            guid = self._hash_md5(line)
+            guid = md5(line)
             data = entries[line]
             title = data['title']
             audio = data['audioLink']
