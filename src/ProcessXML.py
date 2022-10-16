@@ -2,6 +2,9 @@ from xml.dom.minidom import parseString
 
 class ProcessXML:
     """Parse an XML RSS feed and return the object.
+
+    Author:
+        Gareth Palmer <bravdthepally@gmail.com>
     """
     def __init__(self, xml: str):
         """Class constructor

@@ -2,7 +2,11 @@ from src.Hash import md5
 from src.SQLITE_CRUD import crud
 
 class PodcastTool(crud):
+    """Tool for performing various podcast operations.
 
+    Args:
+        crud (obj): _description_
+    """
     def __init__(self, db_name: str) -> None:
         from os.path import exists
         first_run = False
