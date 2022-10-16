@@ -22,13 +22,14 @@ class PodcastTool(crud):
         """
         self.create_table('subscribed_podcasts',[
             'table_id CHAR(35) PRIMARY KEY NOT NULL',
-            'name TEXT NOT NULL',
+            'title TEXT NOT NULL',
+            'url TEXT NOT NULL',
             'image TEXT NOT NULL',
             'hash CHAR(32) NOT NULL',
         ])
 
 
-    def subscribe_to_new_podcast(self, podcast_title: str, podcast_image: str, podcast_hash: str, entries: dict) -> None:
+    def subscribe_to_new_podcast(self, podcast_title: str, podcast_url: str, podcast_image: str, podcast_hash: str, entries: dict) -> None:
         """Create a new podcast table for episodes of a subscribed podcast.
 
         Args:
@@ -50,7 +51,8 @@ class PodcastTool(crud):
 
         self.insert('subscribed_podcasts', {
             'table_id': new_table_name,
-            'name': podcast_title,
+            'title': podcast_title,
+            'url': podcast_url,
             'image': podcast_image,
             'hash': podcast_hash,
         })
@@ -116,4 +118,34 @@ class PodcastTool(crud):
 
 
     def download_missing_episodes(self, limit:int=5) -> None:
-        pass
+        results = self.select_all(
+            table='subscribed_podcasts',
+            fields=[
+                'title',
+                'table_id',
+                'url',
+                'hash',
+            ],
+        )
+
+        from src.GetRSS import GetRSS
+        for row in results:
+            title = row[0]
+            id = row[1]
+            url = row[2]
+            hash = row[3]
+
+            rss = GetRSS(url)
+            rss.parse()
+
+            if hash != rss.podcast_hash:
+                # Podcast has updated
+                episodes = self.select_all(id)
+                print(episodes)
+                #######
+                # WIP #
+                #######
+                pass
+            else:
+                print("{pod_title} is up to date".format(pod_title=title))
+            

@@ -27,6 +27,7 @@ class GetRSS:
         self.xml = ProcessXML(self.raw)
         self.parsed_data = {}
 
+        self.podcast_url = url
         self.podcast_title = ''
         self.podcast_image = ''
         self.podcast_hash = ''
