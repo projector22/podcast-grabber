@@ -19,3 +19,13 @@ class ProcessXML:
             object: xml.dom.minidom.Document Class.
         """
         return parseString(self.xml)
+
+
+    def feed_checksum(self) -> str:
+        """Return an MD5 hash of the rss xml.
+
+        Returns:
+            str: md5 hash
+        """
+        from src.Hash import md5
+        return md5(self.xml)

@@ -29,6 +29,7 @@ class GetRSS:
 
         self.podcast_title = ''
         self.podcast_image = ''
+        self.podcast_hash = ''
 
 
     def print_xml(self):
@@ -52,6 +53,7 @@ class GetRSS:
         """
 
         self.parsed_xml = self.xml.parse()
+        self.podcast_hash = self.xml.feed_checksum()
         self._parse_channel_info()
         self._parse_links(limit)
 
@@ -99,16 +101,12 @@ class GetRSS:
                 elif element.tagName == 'guid':
                     guid = element.childNodes[0].data
                 
-                try:
-                    self.parsed_data[guid] = {
-                        'title': title.strip(),
-                        'audioLink': audio.strip(),
-                        'duration': duration.strip(),
-                        'siteURL': siteURL.strip(),
-                        'published': timestamp.strip(),
-                    }
-                except UnboundLocalError:
-                    # print(element)
-                    pass
+            self.parsed_data[guid] = {
+                'title': title.strip(),
+                'audioLink': audio.strip(),
+                'duration': duration.strip(),
+                'siteURL': siteURL.strip(),
+                'published': timestamp.strip(),
+            }
             if limit is not None and i == limit:
                 break
