@@ -117,6 +117,17 @@ class PodcastTool(crud):
         return months[month]
 
 
+    def prepare_download(self, episode_data: dict, folder_id: str) -> None:
+        import os
+        basedir = os.path.abspath(os.getcwd())
+        path = os.path.join(basedir, 'Podcasts', folder_id)
+        if os.path.exists(path) == False:
+            os.makedirs(path)
+
+        file = os.path.join(path, episode_data['title'] + '.mp3')
+        self._execute_download(episode_data['audioLink'], file)
+
+
     def _execute_download(self, url: str, file_name: str) -> bool:
         try:
             from urllib import request
@@ -148,13 +159,27 @@ class PodcastTool(crud):
             rss.parse()
 
             if hash != rss.podcast_hash:
-                # Podcast has updated
-                episodes = self.select_all(id)
-                print(episodes)
-                #######
-                # WIP #
-                #######
-                pass
+                ## Podcast has updated
+                episodes = self.select_all(id, 'guid')
+                downloaded = []
+                for guid in episodes:
+                    downloaded.append(guid[0])
+                for guid in rss.parsed_data:
+                    ep_hash = md5(guid)
+                    if ep_hash not in downloaded:
+                        data = rss.parsed_data[guid]
+                        print("Downloading episode of {tit}: {ep}...".format(ep=data['title'], tit=title))
+                        # print(id)
+                        self.prepare_download(data, id)
+                        # print(guid, data)
+                        ##
+                        # WIP
+                        # 
+                        # UPDATE DB
+                        ##
+                    else:
+                        break
             else:
                 print("{pod_title} is up to date".format(pod_title=title))
+                # pass
             
