@@ -16,6 +16,12 @@ class crud:
         self.cursor = self.conn.cursor()
 
 
+    def __del__(self):
+        """Class destructor, closes the database connection.
+        """
+        self.conn.close()
+
+
     def create_table(self, table_name: str, field_list: list) -> None:
         """Create a table on the database.
 
