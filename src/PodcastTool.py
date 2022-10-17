@@ -117,7 +117,16 @@ class PodcastTool(crud):
         return months[month]
 
 
-    def download_missing_episodes(self, limit:int=5) -> None:
+    def _execute_download(self, url: str, file_name: str) -> bool:
+        try:
+            from urllib import request
+            request.urlretrieve(url, file_name)
+            return True
+        except:
+            return False
+
+
+    def check_for_missing_episodes(self, limit:int=5) -> None:
         results = self.select_all(
             table='subscribed_podcasts',
             fields=[
