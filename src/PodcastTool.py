@@ -119,12 +119,13 @@ class PodcastTool(crud):
 
     def prepare_download(self, episode_data: dict, folder_id: str) -> None:
         import os
+        timestamp = str(self._get_timestamp(episode_data['published']))
         basedir = os.path.abspath(os.getcwd())
         path = os.path.join(basedir, 'Podcasts', folder_id)
         if os.path.exists(path) == False:
             os.makedirs(path)
 
-        file = os.path.join(path, episode_data['title'] + '.mp3')
+        file = os.path.join(path, timestamp + ' - ' + episode_data['title'] + '.mp3')
         self._execute_download(episode_data['audioLink'], file)
 
 
@@ -181,5 +182,3 @@ class PodcastTool(crud):
                         break
             else:
                 print("{pod_title} is up to date".format(pod_title=title))
-                # pass
-            
